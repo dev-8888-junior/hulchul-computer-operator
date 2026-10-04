@@ -1,0 +1,39 @@
+[
+  {
+    "id": "1042",
+    "customerName": "Riya Sharma",
+    "product": "Wireless Headphones",
+    "orderDate": "2026-09-30",
+    "deliveryDate": "2026-10-02",
+    "status": "delivered",
+    "price": 2499,
+    "cancellationEligible": false,
+    "refundEligible": false,
+    "customerRequest": "I want to cancel this order and get a refund."
+  },
+  {
+    "id": "1057",
+    "customerName": "Arjun Mehta",
+    "product": "Smart Water Bottle",
+    "orderDate": "2026-10-03",
+    "deliveryDate": null,
+    "status": "processing",
+    "price": 1599,
+    "cancellationEligible": true,
+    "refundEligible": false,
+    "customerRequest": "Please cancel my order."
+  },
+ {
+  "id": "1063",
+  "customerName": "Neha Kapoor",
+  "product": "Bluetooth Speaker",
+  "orderDate": "2026-10-01",
+  "deliveryDate": null,
+  "status": "processing",
+  "price": 3299,
+  "cancellationEligible": true,
+  "refundEligible": true,
+  "refundIssued": false,
+  "customerRequest": "I no longer need this. Please cancel it."
+}
+]

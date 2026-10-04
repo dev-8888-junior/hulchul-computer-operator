@@ -1,0 +1,20 @@
+[
+  {
+    "id": "C001",
+    "name": "Riya Sharma",
+    "email": "riya@example.com",
+    "orderId": "1042"
+  },
+  {
+    "id": "C002",
+    "name": "Arjun Mehta",
+    "email": "arjun@example.com",
+    "orderId": "1057"
+  },
+  {
+    "id": "C003",
+    "name": "Neha Kapoor",
+    "email": "neha@example.com",
+    "orderId": "1063"
+  }
+]

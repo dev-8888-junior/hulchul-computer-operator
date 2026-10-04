@@ -1,0 +1,19 @@
+[
+  {
+    "id": "cancellation",
+    "title": "Cancellation Policy",
+    "rules": [
+      "Orders can be cancelled while their status is processing.",
+      "Delivered orders cannot be cancelled."
+    ]
+  },
+  {
+    "id": "refund",
+    "title": "Refund Policy",
+    "rules": [
+      "Refunds are available within 7 days of delivery.",
+      "Orders delivered more than 7 days ago are not eligible for a standard refund.",
+      "A refund requires customer support approval before it is issued."
+    ]
+  }
+]
