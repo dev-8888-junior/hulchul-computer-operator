@@ -1,149 +1,162 @@
 const { createPlan } = require("./planner");
 
 const {
-  openSupportPortal,
-  findOrder,
-  cancelOrder,
-  refundOrder
+openSupportPortal,
+findOrder,
+cancelOrder,
+refundOrder
 } = require("./browser");
 
 const {
-  verifyCancellation,
-  verifyRefund
+verifyCancellation,
+verifyRefund
 } = require("./verifier");
 
 const { captureEvidence } = require("./evidence");
 
 async function executePlan(plan) {
-  let browser;
+let browser;
 
-  try {
-    const portal = await openSupportPortal();
-    browser = portal.browser;
+try {
+const portal = await openSupportPortal();
+browser = portal.browser;
 
-    const { page } = portal;
+const page = portal.page;
 
-    await findOrder(page, plan.orderId);
+await findOrder(page, plan.orderId);
 
-    if (plan.action === "cancel_order") {
-      await cancelOrder(page);
+if (plan.action === "cancel_order") {
+  const cancellationResult = await cancelOrder(
+    page,
+    plan.orderId
+  );
 
-      const verification = await verifyCancellation(
-        page,
-        plan.orderId
-      );
+  const verification = await verifyCancellation(
+    page,
+    plan.orderId
+  );
 
-      if (!verification.verified) {
-        return {
-          success: false,
-          stage: "verification",
-          error: verification.reason,
-          plan
-        };
-      }
-
-      const evidencePath = await captureEvidence(
-        page,
-        plan.orderId
-      );
-
-      return {
-        success: true,
-        plan,
-        verification,
-        evidencePath
-      };
-    }
-
-    if (plan.action === "refund_request") {
-      await refundOrder(page);
-
-      const verification = await verifyRefund(
-        page,
-        plan.orderId
-      );
-
-      if (!verification.verified) {
-        return {
-          success: false,
-          stage: "verification",
-          error: verification.reason,
-          plan
-        };
-      }
-
-      const evidencePath = await captureEvidence(
-        page,
-        plan.orderId
-      );
-
-      return {
-        success: true,
-        plan,
-        verification,
-        evidencePath
-      };
-    }
-
+  if (!verification.verified) {
     return {
       success: false,
-      stage: "execution",
-      error: `Unsupported action: ${plan.action}`,
+      stage: "verification",
+      error: verification.reason,
       plan
     };
-  } catch (error) {
-    return {
-      success: false,
-      stage: "execution",
-      error: error.message,
-      plan
-    };
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
   }
+
+  const evidencePath = await captureEvidence(
+    page,
+    plan.orderId
+  );
+
+  return {
+    success: true,
+    plan,
+    verification,
+    recovery: cancellationResult.recovered
+      ? cancellationResult.message
+      : null,
+    evidencePath
+  };
+}
+
+if (plan.action === "refund_request") {
+  await refundOrder(page);
+
+  const verification = await verifyRefund(
+    page,
+    plan.orderId
+  );
+
+  if (!verification.verified) {
+    return {
+      success: false,
+      stage: "verification",
+      error: verification.reason,
+      plan
+    };
+  }
+
+  const evidencePath = await captureEvidence(
+    page,
+    plan.orderId
+  );
+
+  return {
+    success: true,
+    plan,
+    verification,
+    evidencePath
+  };
+}
+
+return {
+  success: false,
+  stage: "execution",
+  error: "Unsupported action: " + plan.action,
+  plan
+};
+
+} catch (error) {
+console.error("OPERATOR ERROR:", error.stack);
+
+return {
+  success: false,
+  stage: "execution",
+  error: error.message,
+  plan
+};
+
+} finally {
+if (browser) {
+await browser.close();
+}
+}
 }
 
 async function executeGoal(goal) {
-  const planningResult = createPlan(goal);
+const planningResult = createPlan(goal);
 
-  if (!planningResult.success) {
-    return {
-      success: false,
-      stage: "planning",
-      error: planningResult.error
-    };
-  }
+if (!planningResult.success) {
+return {
+success: false,
+stage: "planning",
+error: planningResult.error
+};
+}
 
-  const { plan } = planningResult;
+const plan = planningResult.plan;
 
-  if (plan.requiresApproval) {
-    return {
-      success: false,
-      stage: "approval",
-      requiresApproval: true,
-      message: `Refund action for order #${plan.orderId} requires your approval before the operator can proceed.`,
-      plan
-    };
-  }
+if (plan.requiresApproval) {
+return {
+success: false,
+stage: "approval",
+requiresApproval: true,
+message:
+"Refund action for order #" +
+plan.orderId +
+" requires your approval before the operator can proceed.",
+plan
+};
+}
 
-  return executePlan(plan);
+return executePlan(plan);
 }
 
 async function executeApprovedPlan(plan) {
-  if (!plan || !plan.orderId || !plan.action) {
-    return {
-      success: false,
-      stage: "approval",
-      error: "A valid plan is required."
-    };
-  }
+if (!plan || !plan.orderId || !plan.action) {
+return {
+success: false,
+stage: "approval",
+error: "A valid plan is required."
+};
+}
 
-  return executePlan(plan);
+return executePlan(plan);
 }
 
 module.exports = {
-  executeGoal,
-  executeApprovedPlan
+executeGoal,
+executeApprovedPlan
 };
